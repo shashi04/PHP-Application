@@ -1,100 +1,102 @@
 <?php
-include "db.php";
-
 session_start();
-
-#Login script is begin here
-#If user given credential matches successfully with the data available in database then we will echo string login_success
-#login_success string will go back to called Anonymous funtion $("#login").click() 
-
-if(isset($_POST["email"]) && isset($_POST["password"])){
-	$email = mysqli_real_escape_string($con,$_POST["email"]);
-	$password = $_POST["password"];
-	$sql = "SELECT * FROM user_info WHERE email = '$email' AND password = '$password'";
-	$run_query = mysqli_query($con,$sql);
-	$count = mysqli_num_rows($run_query);
-    $row = mysqli_fetch_array($run_query);
-		$_SESSION["uid"] = $row["user_id"];
-		$_SESSION["name"] = $row["first_name"];
-		$ip_add = getenv("REMOTE_ADDR");
-		//we have created a cookie in login_form.php page so if that cookie is available means user is not login
-        
-	//if user record is available in database then $count will be equal to 1
-	if($count == 1){
-		   	
-			if (isset($_COOKIE["product_list"])) {
-				$p_list = stripcslashes($_COOKIE["product_list"]);
-				//here we are decoding stored json product list cookie to normal array
-				$product_list = json_decode($p_list,true);
-				for ($i=0; $i < count($product_list); $i++) { 
-					//After getting user id from database here we are checking user cart item if there is already product is listed or not
-					$verify_cart = "SELECT id FROM cart WHERE user_id = $_SESSION[uid] AND p_id = ".$product_list[$i];
-					$result  = mysqli_query($con,$verify_cart);
-					if(mysqli_num_rows($result) < 1){
-						//if user is adding first time product into cart we will update user_id into database table with valid id
-						$update_cart = "UPDATE cart SET user_id = '$_SESSION[uid]' WHERE ip_add = '$ip_add' AND user_id = -1";
-						mysqli_query($con,$update_cart);
-					}else{
-						//if already that product is available into database table we will delete that record
-						$delete_existing_product = "DELETE FROM cart WHERE user_id = -1 AND ip_add = '$ip_add' AND p_id = ".$product_list[$i];
-						mysqli_query($con,$delete_existing_product);
-					}
-				}
-				//here we are destroying user cookie
-				setcookie("product_list","",strtotime("-1 day"),"/");
-				//if user is logging from after cart page we will send cart_login
-				echo "cart_login";
-				
-				
-				exit();
-				
-			}
-			//if user is login from page we will send login_success
-			echo "login_success";
-			$BackToMyPage = $_SERVER['HTTP_REFERER'];
-				if(!isset($BackToMyPage)) {
-					header('Location: '.$BackToMyPage);
-					echo"<script type='text/javascript'>
-					
-					</script>";
-				} else {
-					header('Location: index.php'); // default page
-				} 
-				
-			
-            exit;
-
-		}else{
-                $email = mysqli_real_escape_string($con,$_POST["email"]);
-                $password =md5($_POST["password"]) ;
-                $sql = "SELECT * FROM admin_info WHERE admin_email = '$email' AND admin_password = '$password'";
-                $run_query = mysqli_query($con,$sql);
-                $count = mysqli_num_rows($run_query);
-
-            //if user record is available in database then $count will be equal to 1
-            if($count == 1){
-                $row = mysqli_fetch_array($run_query);
-                $_SESSION["uid"] = $row["admin_id"];
-                $_SESSION["name"] = $row["admin_name"];
-                $ip_add = getenv("REMOTE_ADDR");
-                //we have created a cookie in login_form.php page so if that cookie is available means user is not login
-
-
-                    //if user is login from page we will send login_success
-                    echo "login_success";
-
-                    echo "<script> location.href='admin/add_product.php'; </script>";
-                    exit;
-
-                }else{
-                    echo "<span style='color:red;'>Please register before login..!</span>";
-                    exit();
-                }
-    
-	
-}
-    
-	
-}
-
+ob_start();
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Online Event</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+
+</head>
+<body>
+	<!--<div class="artboard-content" style="display:none;">
+		
+		<p style="text-align:center; margin-top: 38%; position: relative;">
+		<img src="assets/image/aun-new1.gif" style="max-width: 240px;" />
+		</p>
+		<p style="padding:20px; color:#5c5959; text-align:center; font-weight: 600;">PLEASE ROTATE YOUR DEVICE FOR BETTER EXPERIENCE</p>
+	</div>-->
+  <div class="bg-img">
+	   <!--<img src="assets/image/Scene1.jpg" alt=""  />-->
+      <div class="content">
+		<img src="assets/image/Final-Logo.png"  />
+		<?php 
+			include'db-connect.php';			
+			// define variables to empty values  
+			$emailErr ="";    
+			  
+			//Input fields validation  
+			if(isset($_POST['form_submit'])){ 
+				  
+				//Email Validation   
+				if (empty($_POST["email"])) {  
+						$emailErr = "Email is required";  
+				} else {  
+						 $email = input_data($_POST["email"]); 
+						// check that the e-mail address is well-formed  
+						if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {  
+							$emailErr = "Invalid email format";  
+						}  
+				 }  
+				
+				 
+				$sql ="SELECT * FROM event_reg_tb WHERE email='$email'";
+					$res=mysqli_query($connect,$sql);
+					 $count = mysqli_num_rows($res);
+					
+					if($count == 1)
+					{
+						$tdate=date('d-m-Y');
+						$upsql ="update event_reg_tb set event_login='ACTIVE',event_logindt='$tdate' WHERE email='$email'";
+						$upres=mysqli_query($connect,$upsql);
+						$_SESSION['UserPass_id']=$email;
+							?>
+							<script>
+							    window.location.href = 'lobby.php';
+							</script>
+							<?php
+					}
+					else
+					{
+						//echo mysqli_error($connect)
+						?>
+						<script>
+							window.location.href = 'event-registration.php';
+						</script>
+						<?php
+						
+					}   
+
+			}  
+		    function input_data($data) {  
+			  $data = trim($data);  
+			  $data = stripslashes($data);  
+			  $data = htmlspecialchars($data);  
+			  return $data;  
+			}  
+			?>
+			<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+			  <div class="form-group">
+				<input type="email" class="form-control" placeholder="Enter email to continue.." name="email" required="true">
+				<span class="error"><?php echo $emailErr; ?> </span>  
+			  </div>
+			
+			  <button type="submit" class="btn btn-primary btn-block" name="form_submit">Submit</button>
+			</form>
+		</div>
+	</div>
+	
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+<?php ob_flush();?>
+
+
