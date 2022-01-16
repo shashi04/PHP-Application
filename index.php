@@ -17,8 +17,8 @@
 		<p style="padding:20px; color:#5c5959; text-align:center; font-weight: 600;">PLEASE ROTATE YOUR DEVICE FOR BETTER EXPERIENCE</p>
 	</div>-->
    <div class="landing-video">
-		<video  muted class="lan-video"  autoplay style="width:100%;">
-			<source src="assets/image/entry with song.mp4" type="video/mp4" />
+		<video  muted class="landing-video"  autoplay style="width:100%;">
+			<source src="assets/image/entry.mp4" type="video/mp4" />
 		</video>
 	</div>
 	<!--<audio autoplay>
@@ -30,9 +30,9 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
 		// $( document ).ready(function() {
-			 // $(.lan-video).play();
+			 // $(.landing-video).play();
 		// });
-		$(".lan-video").on("ended", function () {
+		$(".landing-video").on("ended", function () {
 			window.location.href = 'login.php';
 		});
 </script>
