@@ -11,15 +11,16 @@
 				if($count == 1)
 				{
 						$row = mysqli_fetch_array($res);
-						$name=$row['name'];
+						$name=$row['firstname'];
 						$result =mysqli_query($connect, "insert into q_a_tb (name,email,message,speaker) values ('$name','$email','$message','$speaker')");
 						if($result )
 						{
-							echo 'Thank you for your question.we will answer you shortly!';	
+							echo 'Thank You for asking the question. We will try our best to take up the question during the LIVE session otherwise we will revert to your query through E-mail.';	
 						}
 						else
 						{
-							echo 'Sorry, We Ran Into Some Problem! We are Fixing It!';	
+							echo 'Sorry, We Ran Into Some Problem! We are Fixing It!';
+							//echo mysqli_error($connect);
 						}
 				}
 				else
